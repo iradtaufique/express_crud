@@ -37,6 +37,10 @@ app.use((req, res, next) =>{
 app.set('view engine', 'ejs');
 
 
+// setting uploads as static file
+app.use(express.static('uploads'));
+
+
 // routes for testing
 app.use("", require('./routes/routes'));
 
