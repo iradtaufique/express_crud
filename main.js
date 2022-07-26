@@ -5,21 +5,41 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 
 
+// database connection
+mongoose.connect(process.env.DB_URI, { useNewUrlParser: true});
+const db = mongoose.connection;
+db.on("error", (error) => console.log(error));
+db.once("open", () => console.log('Connected to the database'))
+
 const app = express();
 const PORT = process.env.PORT || 4000; // getting port from .env
 
 
-// database connection
-mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true});
-const db = mongoose.connection;
-db.on('error', (error) => console.log(error));
-db.once('open', () => console.log('Connected to the database'))
+// Middleware Configurations
+app.use(express.urlencoded({ extended: false}));
+app.use(express.json());
 
-// routes for testing
-app.get('/', (req, res) =>{
-    res.send('Hello There!!');
+app.use(
+    session({
+        secret: 'my secret key',
+        saveUninitialized: true,
+        resave: false
+    })
+);
+
+app.use((req, res, next) =>{
+    res.locals.message = req.session.message;
+    delete req.session.message,
+    next();
 });
 
+// set Template Engine
+app.set('view engine', 'ejs');
+
+
+// routes for testing
+app.use("", require('./routes/routes'));
+
 app.listen(PORT, () =>{
-    console.log(`Server started on http://locahost:${PORT}`);
+    console.log(`Server started on http://localhost:${PORT}`);
 });
